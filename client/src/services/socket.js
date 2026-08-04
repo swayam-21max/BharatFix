@@ -5,12 +5,20 @@ const SOCKET_URL = import.meta.env.VITE_API_URL
     ? import.meta.env.VITE_API_URL.replace(/\/api\/v1\/?$/, '')
     : window.location.origin;
 
+// Detect if running on Vercel serverless static host where WebSockets aren't natively hosted
+const isVercelHost = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
+
 export const socket = io(SOCKET_URL, {
-    autoConnect: true,
-    transports: ['websocket', 'polling'],
+    autoConnect: !isVercelHost, // Disable auto socket connect on Vercel serverless
+    transports: ['polling', 'websocket'],
     reconnection: true,
-    reconnectionDelay: 1000,
-    reconnectionAttempts: 10
+    reconnectionDelay: 5000,
+    reconnectionAttempts: 2
+});
+
+// Suppress unhandled socket connect errors gracefully
+socket.on('connect_error', (err) => {
+    // Silent failover on serverless environments
 });
 
 // Helper functions for joining rooms
