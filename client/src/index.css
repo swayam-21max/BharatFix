@@ -719,9 +719,7 @@ tr:hover td {
     width: 100%;
     border-left: none;
   }
-}
 
-@media (max-width: 768px) {
   .mobile-menu-btn {
     display: inline-flex;
   }
@@ -745,15 +743,21 @@ tr:hover td {
 
   .main-content {
     margin-left: 0;
+    width: 100%;
+    max-width: 100vw;
   }
 
   .topbar {
     left: 0;
+    right: 0;
+    width: 100%;
     padding: 0 16px;
   }
 
   .page-content {
     padding: 16px 12px;
+    width: 100%;
+    max-width: 100vw;
   }
 
   .stats-grid {
@@ -766,6 +770,7 @@ tr:hover td {
 
   .table-wrapper {
     overflow-x: auto;
+    width: 100%;
     -webkit-overflow-scrolling: touch;
   }
 

@@ -433,7 +433,7 @@ export default function Home() {
                 .footer-col a { display: block; margin-top: 0.75rem; text-decoration: none; color: var(--text-secondary); font-size: 0.9rem; }
                 .footer-bottom { border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 3.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
                 
-                @media (max-width: 768px) {
+                @media (max-width: 1024px) {
                     .nav-container { padding: 0 1rem; }
                     .landing-menu-btn { display: block; }
                     .nav-links {
