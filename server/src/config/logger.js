@@ -28,16 +28,27 @@ const format = winston.format.combine(
 );
 
 const transports = [
-    new winston.transports.Console(),
-    new winston.transports.File({
-        filename: 'logs/error.log',
-        level: 'error',
-    }),
-    new winston.transports.File({ filename: 'logs/all.log' }),
+    new winston.transports.Console()
 ];
 
+// File logging only in local dev environment
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    try {
+        const fs = require('fs');
+        if (!fs.existsSync('logs')) {
+            fs.mkdirSync('logs', { recursive: true });
+        }
+        transports.push(
+            new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+            new winston.transports.File({ filename: 'logs/all.log' })
+        );
+    } catch (err) {
+        // Read-only environment, console transport handles output
+    }
+}
+
 const logger = winston.createLogger({
-    level: env.LOG_LEVEL,
+    level: env.LOG_LEVEL || 'info',
     levels,
     format,
     transports,
