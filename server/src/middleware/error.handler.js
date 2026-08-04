@@ -18,32 +18,15 @@ class AppError extends Error {
  * Global Error Handler
  */
 const errorHandler = (err, req, res, next) => {
-    err.statusCode = err.statusCode || 500;
-    err.status = err.status || 'error';
+    const statusCode = err.statusCode || (err.status === 'fail' ? 400 : 500);
+    const message = err.message || 'An internal server error occurred';
 
-    if (process.env.NODE_ENV === 'development') {
-        res.status(err.statusCode).json({
-            status: err.status,
-            error: err,
-            message: err.message,
-            stack: err.stack,
-        });
-    } else {
-        // Production: Don't leak leak error details
-        if (err.isOperational) {
-            res.status(err.statusCode).json({
-                status: err.status,
-                message: err.message,
-            });
-        } else {
-            // Programming or other unknown error: don't leak details
-            logger.error('ERROR 💥', err);
-            res.status(500).json({
-                status: 'error',
-                message: 'Something went very wrong!',
-            });
-        }
-    }
+    console.error(`💥 [${req.method} ${req.originalUrl || req.url}] Error ${statusCode}:`, err);
+
+    return res.status(statusCode).json({
+        status: `${statusCode}`.startsWith('4') ? 'fail' : 'error',
+        message: message
+    });
 };
 
 module.exports = {

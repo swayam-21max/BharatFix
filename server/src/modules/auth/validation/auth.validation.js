@@ -7,8 +7,8 @@ const registerSchema = z.object({
         phoneNumber: z.string().optional(),
         password: z.string().min(8, 'Password must be at least 8 characters long'),
         role: z.enum(['RESIDENT', 'BLOCK_HEAD']).default('RESIDENT'),
-        houseNumber: z.string().optional(),
-        blockId: z.string().uuid('Invalid block ID').optional(),
+        houseNumber: z.string().optional().nullable().or(z.literal('')),
+        blockId: z.string().optional().nullable().or(z.literal('')),
     }).refine(data => {
         if (data.role === 'RESIDENT' && !data.houseNumber) return false;
         return true;
