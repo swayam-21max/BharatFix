@@ -4,6 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, User, Building, Home as HomeIcon } from 'lucide-react';
 import api from '../services/api';
 
+const DEFAULT_FALLBACK_BLOCKS = [
+    { id: 'bcd21adf-e91e-414c-bcd2-537392beb784', name: 'Block A' },
+    { id: '43fccf18-c0e9-4f9f-8b4c-a7fdf07c70fa', name: 'Block B' },
+    { id: 'b8f4b46b-b949-423b-8c89-04e21b1ce806', name: 'Market Area' },
+    { id: '92a912ff-9b7d-4313-9da5-f060674caa8a', name: 'Park Zone' }
+];
+
 export default function Register() {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
@@ -11,7 +18,7 @@ export default function Register() {
     const [role, setRole] = useState('RESIDENT');
     const [houseNumber, setHouseNumber] = useState('');
     const [blockId, setBlockId] = useState('');
-    const [blocks, setBlocks] = useState([]);
+    const [blocks, setBlocks] = useState(DEFAULT_FALLBACK_BLOCKS);
 
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
@@ -24,9 +31,14 @@ export default function Register() {
         const fetchBlocks = async () => {
             try {
                 const { data } = await api.get('/blocks');
-                setBlocks(data.data || []);
+                const list = data?.data || [];
+                if (list.length > 0) {
+                    setBlocks(list);
+                } else {
+                    setBlocks(DEFAULT_FALLBACK_BLOCKS);
+                }
             } catch (err) {
-                setBlocks([]);
+                setBlocks(DEFAULT_FALLBACK_BLOCKS);
                 console.error('Failed to fetch blocks', err);
             }
         };

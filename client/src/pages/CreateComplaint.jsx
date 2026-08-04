@@ -50,6 +50,13 @@ function calculateTargetTime(priorityId) {
     };
 }
 
+const DEFAULT_FALLBACK_BLOCKS = [
+    { id: 'bcd21adf-e91e-414c-bcd2-537392beb784', name: 'Block A' },
+    { id: '43fccf18-c0e9-4f9f-8b4c-a7fdf07c70fa', name: 'Block B' },
+    { id: 'b8f4b46b-b949-423b-8c89-04e21b1ce806', name: 'Market Area' },
+    { id: '92a912ff-9b7d-4313-9da5-f060674caa8a', name: 'Park Zone' }
+];
+
 export default function CreateComplaint() {
     const { user } = useAuth();
     const [form, setForm] = useState({
@@ -62,7 +69,7 @@ export default function CreateComplaint() {
         latitude: null,
         longitude: null,
     });
-    const [blocks, setBlocks] = useState([]);
+    const [blocks, setBlocks] = useState(DEFAULT_FALLBACK_BLOCKS);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [selectedBlock, setSelectedBlock] = useState(null);
@@ -70,13 +77,16 @@ export default function CreateComplaint() {
 
     useEffect(() => {
         api.get('/blocks').then((res) => {
-            const fetchedBlocks = res.data.data || [];
-            setBlocks(fetchedBlocks);
+            const fetchedBlocks = res.data?.data || [];
+            const list = fetchedBlocks.length > 0 ? fetchedBlocks : DEFAULT_FALLBACK_BLOCKS;
+            setBlocks(list);
             if (user?.blockId) {
-                const b = fetchedBlocks.find(x => x.id === user.blockId);
+                const b = list.find(x => x.id === user.blockId);
                 if (b) setSelectedBlock(b);
             }
-        }).catch(console.error);
+        }).catch(() => {
+            setBlocks(DEFAULT_FALLBACK_BLOCKS);
+        });
     }, [user]);
 
     const handleChange = (e) => {
