@@ -2,6 +2,8 @@ const complaintRepository = require('../repositories/complaint.repository');
 const { AppError } = require('../../../middleware/error.handler');
 const eventBus = require('../../../events/event.bus');
 const EVENT_TYPES = require('../../../events/event.types');
+const { emitComplaintCreated, emitComplaintUpdated, emitComplaintEscalated } = require('../../../config/socket');
+const { sendComplaintCreatedWhatsApp, sendComplaintStatusWhatsApp, sendEscalationWhatsApp } = require('../../../services/whatsapp.service');
 
 class ComplaintService {
     calculateSLA(priority) {
@@ -19,11 +21,6 @@ class ComplaintService {
         // 1. Validate block and get assigned Block Head
         const block = await complaintRepository.findBlockWithSupervisor(data.blockId || user.blockId);
         if (!block) throw new AppError('Block not found', 404);
-
-        // Ensure residents belong to the block they are filing for (optional strictness)
-        // if (user.role === 'RESIDENT' && user.blockId && user.blockId !== block.id) {
-        //     throw new AppError('You can only file complaints for your assigned block', 403);
-        // }
 
         // 2. Calculate SLA
         const slaDueAt = this.calculateSLA(data.priority);
@@ -50,8 +47,15 @@ class ComplaintService {
         };
 
         const complaint = await complaintRepository.createWithHistory(complaintData, historyData);
+        const fullComplaint = await complaintRepository.findById(complaint.id);
 
-        // 4. Emit event — notify Block Head if assigned
+        // 4. Broadcast Real-Time Socket.io Event
+        emitComplaintCreated(fullComplaint || complaint);
+
+        // 5. Trigger WhatsApp Notification to Resident
+        sendComplaintCreatedWhatsApp(complaint, user, block.name).catch(err => console.error('WhatsApp dispatch error:', err));
+
+        // 6. Emit internal pub/sub event
         if (block.supervisorId) {
             eventBus.publish(EVENT_TYPES.COMPLAINT_CREATED, {
                 complaint,
@@ -61,7 +65,7 @@ class ComplaintService {
             });
         }
 
-        return complaint;
+        return fullComplaint || complaint;
     }
 
     async getSupervisorComplaints(user, filters) {
@@ -73,7 +77,6 @@ class ComplaintService {
         } else if (user.role === 'RESIDENT') {
             queryFilters.residentId = user.id;
         }
-        // ADMIN has no filtering here = see all
 
         return await complaintRepository.findAll(queryFilters);
     }
@@ -114,9 +117,21 @@ class ComplaintService {
             comment: comment || `Status updated by ${user.role}`
         };
 
-        const updated = await complaintRepository.updateStatusWithHistory(complaintId, updateData, historyData);
+        await complaintRepository.updateStatusWithHistory(complaintId, updateData, historyData);
+        const updatedFull = await complaintRepository.findById(complaintId);
 
-        // Notify resident
+        // 1. Broadcast Socket.io Event in Real-Time
+        emitComplaintUpdated(updatedFull || complaint);
+
+        // 2. Dispatch WhatsApp Notification to Resident
+        sendComplaintStatusWhatsApp(updatedFull || complaint, complaint.resident, newStatus, comment).catch(err => console.error('WhatsApp status error:', err));
+
+        // 3. If Escalated, also dispatch Escalation WhatsApp alert
+        if (newStatus === 'ESCALATED') {
+            sendEscalationWhatsApp(updatedFull || complaint, complaint.resident).catch(err => console.error('WhatsApp escalation error:', err));
+        }
+
+        // 4. Notify pub/sub subscribers
         eventBus.publish(EVENT_TYPES.COMPLAINT_STATUS_CHANGED, {
             complaint: { id: complaintId, title: complaint.title },
             oldStatus: complaint.status,
@@ -124,7 +139,7 @@ class ComplaintService {
             residentId: complaint.residentId,
         });
 
-        return updated;
+        return updatedFull;
     }
 
     async getComplaintById(user, complaintId) {

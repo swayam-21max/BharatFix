@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, User, Building, Home as HomeIcon } from 'lucide-react';
+import { Eye, EyeOff, User, Building, Home as HomeIcon, Phone, MessageCircle } from 'lucide-react';
 import api from '../services/api';
 
 const DEFAULT_FALLBACK_BLOCKS = [
@@ -14,6 +14,7 @@ const DEFAULT_FALLBACK_BLOCKS = [
 export default function Register() {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('RESIDENT');
     const [houseNumber, setHouseNumber] = useState('');
@@ -65,6 +66,7 @@ export default function Register() {
             await register({
                 fullName,
                 email,
+                phoneNumber,
                 password,
                 role,
                 houseNumber: role === 'RESIDENT' ? houseNumber : undefined,
@@ -181,6 +183,20 @@ export default function Register() {
                                     required
                                 />
                             </div>
+                        </div>
+
+                        <div className="form-group" style={{ marginTop: 16 }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <Phone size={14} color="var(--primary)" /> Mobile Number (WhatsApp Alerts)
+                            </label>
+                            <input
+                                type="tel"
+                                className="form-input"
+                                placeholder="+91 98765 43210"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                required
+                            />
                         </div>
 
                         <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>

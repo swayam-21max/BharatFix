@@ -30,7 +30,7 @@ class ComplaintRepository {
             where: { id },
             include: {
                 block: { select: { id: true, name: true } },
-                resident: { select: { fullName: true, email: true, houseNumber: true } },
+                resident: { select: { fullName: true, email: true, houseNumber: true, phoneNumber: true } },
                 assignedTo: { select: { fullName: true, email: true, role: true } },
                 statusHistory: {
                     include: {
@@ -67,7 +67,7 @@ class ComplaintRepository {
             where,
             orderBy: { createdAt: 'desc' },
             include: {
-                resident: { select: { fullName: true, email: true, houseNumber: true } },
+                resident: { select: { fullName: true, email: true, houseNumber: true, phoneNumber: true } },
                 block: { select: { name: true } },
                 assignedTo: { select: { fullName: true } }
             },

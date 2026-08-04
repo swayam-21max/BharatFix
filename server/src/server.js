@@ -6,6 +6,7 @@ const redisClient = require('./config/redis');
 const { initJobs } = require('./jobs');
 const { initSubscribers } = require('./events/subscribers');
 const { initTransporter } = require('./notifications/email.provider');
+const { initSocket } = require('./config/socket');
 
 const PORT = env.PORT || 5000;
 
@@ -31,6 +32,9 @@ const startServer = async () => {
         const server = app.listen(PORT, () => {
             logger.info(`🌐 BHARATFIX Server running in ${env.NODE_ENV} mode on port ${PORT}`);
         });
+
+        // Initialize Socket.io Real-Time Engine
+        initSocket(server);
 
         // Handle Unhandled Rejections
         process.on('unhandledRejection', (err) => {

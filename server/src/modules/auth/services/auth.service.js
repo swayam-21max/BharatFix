@@ -2,10 +2,11 @@ const bcrypt = require('bcryptjs');
 const authRepository = require('../repositories/auth.repository');
 const { signToken } = require('../../../utils/jwt.helper');
 const { AppError } = require('../../../middleware/error.handler');
+const { sendRegistrationWhatsApp } = require('../../../services/whatsapp.service');
 
 class AuthService {
     async register(userData) {
-        const { email, password, fullName, role, houseNumber, blockId } = userData;
+        const { email, phoneNumber, password, fullName, role, houseNumber, blockId } = userData;
 
         // 1. Check if user already exists
         const existingUser = await authRepository.findByEmail(email);
@@ -25,6 +26,7 @@ class AuthService {
         // 4. Create user
         const user = await authRepository.createUser({
             email,
+            phoneNumber,
             passwordHash,
             fullName,
             role: role || 'RESIDENT',
@@ -33,7 +35,12 @@ class AuthService {
             ...approvalData
         });
 
-        // 5. Generate token
+        // 5. Send Welcome WhatsApp Message
+        if (user.phoneNumber) {
+            sendRegistrationWhatsApp(user).catch(err => console.error('WhatsApp send error:', err));
+        }
+
+        // 6. Generate token
         const token = signToken({ id: user.id, role: user.role });
 
         return { user, token };

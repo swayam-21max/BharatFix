@@ -36,6 +36,7 @@ import {
     Pie,
     Cell
 } from 'recharts';
+import socket, { joinUserRoom } from '../services/socket';
 import api from '../services/api';
 import './Dashboard.css';
 
@@ -112,12 +113,34 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState('7d');
 
-    useEffect(() => {
+    const fetchStats = () => {
         api.get('/dashboard/stats')
             .then((res) => setStats(res.data.data))
             .catch(console.error)
             .finally(() => setLoading(false));
-    }, []);
+    };
+
+    useEffect(() => {
+        fetchStats();
+
+        // Join user room for targeted socket events
+        if (user?.id) joinUserRoom(user.id);
+
+        // Listen for live real-time socket events
+        const handleLiveUpdate = () => {
+            fetchStats();
+        };
+
+        socket.on('complaint:created', handleLiveUpdate);
+        socket.on('complaint:updated', handleLiveUpdate);
+        socket.on('complaint:escalated', handleLiveUpdate);
+
+        return () => {
+            socket.off('complaint:created', handleLiveUpdate);
+            socket.off('complaint:updated', handleLiveUpdate);
+            socket.off('complaint:escalated', handleLiveUpdate);
+        };
+    }, [user]);
 
     if (loading && !stats) {
         return (
