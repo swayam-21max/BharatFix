@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  BLOCK_HEAD
+  RESIDENT
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+  ESCALATED
+  SLA_BREACHED
+}
+
+enum ComplaintPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id              String         @id @default(uuid()) @db.Uuid
+  fullName        String
+  email           String         @unique
+  passwordHash    String
+  role            Role           @default(RESIDENT)
+  houseNumber     String?
+  isApproved      Boolean        @default(true) // Default true for Resident, set to false for Block Head in logic
+  approvalStatus  ApprovalStatus @default(APPROVED) // Default approved for Resident
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  blockId         String?        @db.Uuid
+  block           Block?         @relation("BlockResidents", fields: [blockId], references: [id])
+
+  blockSupervisorOf Block[]      @relation("BlockSupervisor")
+  complaints        Complaint[]  @relation("ResidentComplaints")
+  assignedComplaints Complaint[] @relation("SupervisorComplaints")
+  statusHistory      ComplaintStatusHistory[]
+  escalations        Escalation[]
+  auditLogs          GovernanceAudit[] @relation("Actor")
+  targetAuditLogs    GovernanceAudit[] @relation("Target")
+
+  @@index([role])
+  @@index([approvalStatus])
+}
+
+model Block {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  supervisorId String?  @db.Uuid
+  supervisor   User?    @relation("BlockSupervisor", fields: [supervisorId], references: [id])
+  
+  residents    User[]   @relation("BlockResidents")
+  complaints   Complaint[]
+}
+
+model Complaint {
+  id          String            @id @default(uuid()) @db.Uuid
+  title       String
+  description String
+  imageUrl    String?
+  latitude    Float?
+  longitude   Float?
+  houseNumber String
+  category    String
+
+  status      ComplaintStatus   @default(OPEN)
+  priority    ComplaintPriority @default(MEDIUM)
+  escalationLevel Int           @default(1)
+
+  slaDueAt    DateTime
+  resolvedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  residentId  String   @db.Uuid
+  resident    User     @relation("ResidentComplaints", fields: [residentId], references: [id])
+  
+  assignedToId String? @db.Uuid
+  assignedTo   User?   @relation("SupervisorComplaints", fields: [assignedToId], references: [id])
+
+  blockId     String   @db.Uuid
+  block       Block    @relation(fields: [blockId], references: [id])
+
+  statusHistory ComplaintStatusHistory[]
+  escalations   Escalation[]
+
+  @@index([status])
+  @@index([blockId])
+  @@index([residentId])
+  @@index([assignedToId])
+  @@index([createdAt])
+}
+
+model ComplaintStatusHistory {
+  id          String          @id @default(uuid()) @db.Uuid
+  oldStatus   ComplaintStatus?
+  newStatus   ComplaintStatus
+  changedAt   DateTime        @default(now())
+  comment     String?
+
+  complaintId String          @db.Uuid
+  complaint   Complaint       @relation(fields: [complaintId], references: [id])
+  
+  changedById String          @db.Uuid
+  changedBy   User            @relation(fields: [changedById], references: [id])
+
+  @@index([complaintId])
+}
+
+model Escalation {
+  id            String   @id @default(uuid()) @db.Uuid
+  reason        String
+  escalatedAt   DateTime @default(now())
+  level         Int      @default(1)
+
+  complaintId   String   @db.Uuid
+  complaint     Complaint @relation(fields: [complaintId], references: [id])
+  
+  escalatedToId String   @db.Uuid
+  escalatedTo   User     @relation(fields: [escalatedToId], references: [id])
+
+  @@index([complaintId])
+  @@index([escalatedToId])
+}
+
+model GovernanceAudit {
+  id          String   @id @default(uuid()) @db.Uuid
+  action      String
+  details     String
+  createdAt   DateTime @default(now())
+
+  actorId     String   @db.Uuid
+  actor       User     @relation("Actor", fields: [actorId], references: [id])
+
+  targetUserId String? @db.Uuid
+  targetUser   User?   @relation("Target", fields: [targetUserId], references: [id])
+
+  @@index([actorId])
+  @@index([targetUserId])
+}
