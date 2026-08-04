@@ -149,7 +149,7 @@ export default function ComplaintDetail() {
                 ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '32px', alignItems: 'start' }}>
+            <div className="complaint-detail-layout">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
                     {/* SLA Countdown Health Progress Meter */}
                     <div className="glass-card" style={{ padding: '24px', borderRadius: '20px' }}>

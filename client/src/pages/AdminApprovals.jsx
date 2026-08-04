@@ -79,7 +79,8 @@ export default function AdminApprovals() {
                 padding: '16px 24px',
                 borderRadius: 16,
                 display: 'flex',
-                gap: 24,
+                gap: 16,
+                flexWrap: 'wrap',
                 marginBottom: 32,
                 border: '1px solid var(--border)',
                 alignItems: 'center',
@@ -125,7 +126,7 @@ export default function AdminApprovals() {
                     <p style={{ color: 'var(--text-muted)' }}>No pending block head applications at the moment.</p>
                 </div>
             ) : (
-                <div className="card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 24 }}>
+                <div className="card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24 }}>
                     {filtered.map(req => (
                         <div key={req.id} className="glass-card hover-lift" style={{ padding: 24, borderRadius: 20 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>

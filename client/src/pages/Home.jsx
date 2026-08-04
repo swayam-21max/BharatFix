@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Shield,
@@ -13,12 +14,16 @@ import {
     Clock,
     Sparkles,
     ChevronRight,
-    Award
+    Award,
+    Menu,
+    X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ChatbotWidget from '../components/Chatbot/ChatbotWidget';
 
 export default function Home() {
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
     return (
         <div className="landing-page">
             {/* Sticky Navigation */}
@@ -28,12 +33,19 @@ export default function Home() {
                         <div className="logo">B</div>
                         <span style={{ fontWeight: 800, fontSize: '1.3rem', letterSpacing: '-0.5px' }}>BharatFix</span>
                     </Link>
-                    <div className="nav-links">
-                        <a href="#features">Features</a>
-                        <a href="#how-it-works">Workflow</a>
-                        <a href="#governance">Governance</a>
-                        <Link to="/login" className="btn btn-ghost" style={{ fontWeight: 600 }}>Login</Link>
-                        <Link to="/register" className="btn btn-primary" style={{ fontWeight: 700 }}>Get Started</Link>
+                    <button
+                        className="landing-menu-btn"
+                        onClick={() => setMobileNavOpen(!mobileNavOpen)}
+                        aria-label="Toggle Navigation Menu"
+                    >
+                        {mobileNavOpen ? <X size={22} /> : <Menu size={22} />}
+                    </button>
+                    <div className={`nav-links ${mobileNavOpen ? 'mobile-open' : ''}`}>
+                        <a href="#features" onClick={() => setMobileNavOpen(false)}>Features</a>
+                        <a href="#how-it-works" onClick={() => setMobileNavOpen(false)}>Workflow</a>
+                        <a href="#governance" onClick={() => setMobileNavOpen(false)}>Governance</a>
+                        <Link to="/login" className="btn btn-ghost" style={{ fontWeight: 600 }} onClick={() => setMobileNavOpen(false)}>Login</Link>
+                        <Link to="/register" className="btn btn-primary" style={{ fontWeight: 700 }} onClick={() => setMobileNavOpen(false)}>Get Started</Link>
                     </div>
                 </div>
             </nav>
@@ -82,16 +94,7 @@ export default function Home() {
                 </motion.div>
 
                 {/* Platform Metric Ribbon */}
-                <div style={{
-                    position: 'relative',
-                    zIndex: 1,
-                    maxWidth: '900px',
-                    margin: '60px auto 0',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
-                    gap: '24px',
-                    textAlign: 'center'
-                }}>
+                <div className="hero-metric-ribbon">
                     <div className="glass-card" style={{ padding: '24px' }}>
                         <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--primary)' }}>100%</div>
                         <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>SLA Breach Tracking</div>
@@ -248,6 +251,7 @@ export default function Home() {
                     justify-content: space-between;
                     align-items: center;
                     padding: 0 2rem;
+                    position: relative;
                 }
                 .nav-logo {
                     display: flex;
@@ -266,6 +270,14 @@ export default function Home() {
                     justify-content: center;
                     font-weight: 900;
                     color: white;
+                }
+                .landing-menu-btn {
+                    display: none;
+                    background: transparent;
+                    border: none;
+                    color: var(--text-primary);
+                    cursor: pointer;
+                    padding: 4px;
                 }
                 .nav-links {
                     display: flex;
@@ -331,6 +343,16 @@ export default function Home() {
                     display: flex;
                     justify-content: center;
                     gap: 1.25rem;
+                }
+                .hero-metric-ribbon {
+                    position: relative;
+                    z-index: 1;
+                    max-width: 900px;
+                    margin: 60px auto 0;
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 24px;
+                    text-align: center;
                 }
                 .btn-lg {
                     padding: 0.85rem 1.75rem;
@@ -412,11 +434,42 @@ export default function Home() {
                 .footer-bottom { border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 3.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
                 
                 @media (max-width: 768px) {
+                    .nav-container { padding: 0 1rem; }
+                    .landing-menu-btn { display: block; }
+                    .nav-links {
+                        display: none;
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        right: 0;
+                        background: #ffffff;
+                        padding: 1.5rem;
+                        flex-direction: column;
+                        align-items: stretch;
+                        gap: 1rem;
+                        border-bottom: 1px solid var(--border);
+                        box-shadow: var(--shadow-lg);
+                    }
+                    .nav-links.mobile-open {
+                        display: flex;
+                    }
+                    .hero { padding: 4rem 1.25rem 3rem; }
+                    .hero-actions { flex-direction: column; gap: 0.75rem; }
+                    .hero-actions .btn { width: 100%; }
+                    .hero-metric-ribbon {
+                        grid-template-columns: 1fr;
+                        gap: 12px;
+                        margin-top: 36px;
+                    }
+                    .features-grid { grid-template-columns: 1fr; }
+                    .section-padding { padding: 3rem 1.25rem; }
                     .workflow-container { flex-direction: column; gap: 2rem; }
                     .workflow-connector-dots { display: none; }
                     .footer-container { flex-direction: column; gap: 2.5rem; }
+                    .footer-links { flex-direction: column; gap: 1.5rem; }
                 }
             `}</style>
         </div>
     );
 }
+

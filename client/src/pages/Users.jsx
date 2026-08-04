@@ -102,7 +102,7 @@ export default function UsersPage() {
                     alignItems: 'center',
                     background: '#f8fafc'
                 }}>
-                    <div style={{ display: 'flex', gap: '16px', flex: 1 }}>
+                    <div style={{ display: 'flex', gap: '16px', flex: 1, flexWrap: 'wrap' }}>
                         <div style={{ position: 'relative', maxWidth: '350px', flex: 1 }}>
                             <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }} />
                             <input

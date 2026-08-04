@@ -227,7 +227,7 @@ export default function CreateComplaint() {
                     </div>
 
                     {/* Block & House Details */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                    <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                         <div className="form-group">
                             <label>Assigned Block</label>
                             <select

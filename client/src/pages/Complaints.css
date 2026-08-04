@@ -537,8 +537,117 @@
   background: #059669;
 }
 
+.complaint-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  align-items: start;
+}
+
 @media (max-width: 1024px) {
-  .create-complaint-wrapper {
+  .create-complaint-wrapper,
+  .complaint-detail-layout {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 768px) {
+  .complaints-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .status-stepper-container {
+    padding: 16px;
+    gap: 8px;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .stepper-step-item {
+    min-width: 70px;
+  }
+
+  .stepper-circle {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+
+  .stepper-label {
+    font-size: 11px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .stepper-connector-line {
+    margin-top: -20px;
+    min-width: 20px;
+  }
+
+  .toolbar-top-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input-wrapper {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .right-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .priority-chip-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .category-tiles-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  .complaints-grid-container {
+    grid-template-columns: 1fr;
+  }
+
+  .complaints-metrics-ribbon {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .metric-mini-card {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .metric-icon-box {
+    width: 40px;
+    height: 40px;
+  }
+
+  .metric-number {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .right-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .select-filter {
+    width: 100%;
+  }
+
+  .view-toggle-group {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

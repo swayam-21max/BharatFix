@@ -8,12 +8,13 @@ import {
     Users,
     Box,
     Settings,
-    LogOut
+    LogOut,
+    X
 } from 'lucide-react';
 import { useState } from 'react';
 import clsx from 'clsx';
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen, onCloseMobile }) {
     const { user, logout } = useAuth();
     const [isCollapsed] = useState(false);
 
@@ -33,69 +34,95 @@ export default function Sidebar() {
         { label: 'Blocks', path: '/blocks', icon: Box },
     ];
 
+    const handleNavClick = () => {
+        if (onCloseMobile) onCloseMobile();
+    };
+
     return (
-        <aside className={clsx("sidebar", isCollapsed && "collapsed")}>
-            <div className="sidebar-brand">
-                <div className="logo">B</div>
-                {!isCollapsed && <h1>BharatFix</h1>}
-            </div>
-
-            <nav className="sidebar-nav">
-                {!isCollapsed && <div className="nav-label">Core</div>}
-                {menuItems.filter(item => !item.roles || item.roles.includes(user?.role)).map(item => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) => clsx("nav-item", isActive && "active")}
+        <>
+            {mobileOpen && (
+                <div
+                    className="sidebar-overlay"
+                    onClick={onCloseMobile}
+                    aria-label="Close Mobile Menu"
+                />
+            )}
+            <aside className={clsx("sidebar", isCollapsed && "collapsed", mobileOpen && "mobile-open")}>
+                <div className="sidebar-brand">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                        <div className="logo">B</div>
+                        {!isCollapsed && <h1>BharatFix</h1>}
+                    </div>
+                    <button
+                        className="mobile-close-btn"
+                        onClick={onCloseMobile}
+                        aria-label="Close Navigation Menu"
                     >
-                        <item.icon size={20} />
-                        {!isCollapsed && <span>{item.label}</span>}
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <nav className="sidebar-nav">
+                    {!isCollapsed && <div className="nav-label">Core</div>}
+                    {menuItems.filter(item => !item.roles || item.roles.includes(user?.role)).map(item => (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            onClick={handleNavClick}
+                            className={({ isActive }) => clsx("nav-item", isActive && "active")}
+                        >
+                            <item.icon size={20} />
+                            {!isCollapsed && <span>{item.label}</span>}
+                        </NavLink>
+                    ))}
+
+                    {user?.role === 'BLOCK_HEAD' && (
+                        <>
+                            {!isCollapsed && <div className="nav-label">Management</div>}
+                            {blockHeadItems.map(item => (
+                                <NavLink
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={handleNavClick}
+                                    className={({ isActive }) => clsx("nav-item", isActive && "active")}
+                                >
+                                    <item.icon size={20} />
+                                    {!isCollapsed && <span>{item.label}</span>}
+                                </NavLink>
+                            ))}
+                        </>
+                    )}
+
+                    {user?.role === 'ADMIN' && (
+                        <>
+                            {!isCollapsed && <div className="nav-label">Admin</div>}
+                            {adminItems.map(item => (
+                                <NavLink
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={handleNavClick}
+                                    className={({ isActive }) => clsx("nav-item", isActive && "active")}
+                                >
+                                    <item.icon size={20} />
+                                    {!isCollapsed && <span>{item.label}</span>}
+                                </NavLink>
+                            ))}
+                        </>
+                    )}
+                </nav>
+
+                <div className="sidebar-footer">
+                    <NavLink to="/settings" onClick={handleNavClick} className="nav-item">
+                        <Settings size={20} />
+                        {!isCollapsed && <span>Settings</span>}
                     </NavLink>
-                ))}
-
-                {user?.role === 'BLOCK_HEAD' && (
-                    <>
-                        {!isCollapsed && <div className="nav-label">Management</div>}
-                        {blockHeadItems.map(item => (
-                            <NavLink
-                                key={item.path}
-                                to={item.path}
-                                className={({ isActive }) => clsx("nav-item", isActive && "active")}
-                            >
-                                <item.icon size={20} />
-                                {!isCollapsed && <span>{item.label}</span>}
-                            </NavLink>
-                        ))}
-                    </>
-                )}
-
-                {user?.role === 'ADMIN' && (
-                    <>
-                        {!isCollapsed && <div className="nav-label">Admin</div>}
-                        {adminItems.map(item => (
-                            <NavLink
-                                key={item.path}
-                                to={item.path}
-                                className={({ isActive }) => clsx("nav-item", isActive && "active")}
-                            >
-                                <item.icon size={20} />
-                                {!isCollapsed && <span>{item.label}</span>}
-                            </NavLink>
-                        ))}
-                    </>
-                )}
-            </nav>
-
-            <div className="sidebar-footer">
-                <NavLink to="/settings" className="nav-item">
-                    <Settings size={20} />
-                    {!isCollapsed && <span>Settings</span>}
-                </NavLink>
-                <button onClick={logout} className="nav-item">
-                    <LogOut size={20} />
-                    {!isCollapsed && <span>Logout</span>}
-                </button>
-            </div>
-        </aside>
+                    <button onClick={() => { if (onCloseMobile) onCloseMobile(); logout(); }} className="nav-item">
+                        <LogOut size={20} />
+                        {!isCollapsed && <span>Logout</span>}
+                    </button>
+                </div>
+            </aside>
+        </>
     );
 }
+

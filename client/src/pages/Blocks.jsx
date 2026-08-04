@@ -76,7 +76,7 @@ export default function BlocksPage() {
                 </button>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
                 {blocks.map((b) => (
                     <div key={b.id} className="glass-card" style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ padding: '24px', borderBottom: '1px solid var(--border)', background: '#f8fafc' }}>
