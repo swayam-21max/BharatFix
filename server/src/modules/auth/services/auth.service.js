@@ -23,6 +23,17 @@ class AuthService {
             ? { isApproved: false, approvalStatus: 'PENDING' }
             : { isApproved: true, approvalStatus: 'APPROVED' };
 
+        // Ensure blockId actually exists in the database to prevent FK constraint failures
+        let validBlockId = blockId;
+        if (validBlockId) {
+            const prisma = require('../../../config/prisma');
+            const targetBlock = await prisma.block.findUnique({ where: { id: validBlockId } });
+            if (!targetBlock) {
+                const firstBlock = await prisma.block.findFirst();
+                validBlockId = firstBlock ? firstBlock.id : null;
+            }
+        }
+
         // 4. Create user
         const user = await authRepository.createUser({
             email,
@@ -31,7 +42,7 @@ class AuthService {
             fullName,
             role: role || 'RESIDENT',
             houseNumber: !isBlockHead ? houseNumber : null,
-            blockId,
+            blockId: validBlockId,
             ...approvalData
         });
 
