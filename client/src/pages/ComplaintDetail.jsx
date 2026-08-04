@@ -21,7 +21,6 @@ import {
     Phone,
     MessageCircle
 } from 'lucide-react';
-import socket, { joinComplaintRoom } from '../services/socket';
 import api from '../services/api';
 import './Complaints.css';
 
@@ -77,30 +76,11 @@ export default function ComplaintDetail() {
     const [newComment, setNewComment] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
 
-    const fetchComplaint = () => {
+    useEffect(() => {
         api.get(`/complaints/${id}`)
             .then((res) => setComplaint(res.data.data))
             .catch((err) => setError(err.response?.data?.message || 'Failed to fetch complaint details'))
             .finally(() => setLoading(false));
-    };
-
-    useEffect(() => {
-        fetchComplaint();
-        if (id) joinComplaintRoom(id);
-
-        const handleLiveUpdate = (updated) => {
-            if (updated && updated.id === id) {
-                setComplaint(updated);
-            } else {
-                fetchComplaint();
-            }
-        };
-
-        socket.on('complaint:updated', handleLiveUpdate);
-
-        return () => {
-            socket.off('complaint:updated', handleLiveUpdate);
-        };
     }, [id]);
 
     const handleStatusUpdate = async (newStatus, customComment) => {

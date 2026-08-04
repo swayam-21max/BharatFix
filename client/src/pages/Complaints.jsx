@@ -22,7 +22,6 @@ import {
     ShieldAlert,
     AlertTriangle
 } from 'lucide-react';
-import socket, { joinUserRoom } from '../services/socket';
 import api from '../services/api';
 import './Complaints.css';
 
@@ -86,25 +85,7 @@ export default function Complaints() {
             .finally(() => setLoading(false));
     };
 
-    useEffect(() => { 
-        fetchComplaints(); 
-
-        if (user?.id) joinUserRoom(user.id);
-
-        const handleLiveUpdate = () => {
-            fetchComplaints();
-        };
-
-        socket.on('complaint:created', handleLiveUpdate);
-        socket.on('complaint:updated', handleLiveUpdate);
-        socket.on('complaint:escalated', handleLiveUpdate);
-
-        return () => {
-            socket.off('complaint:created', handleLiveUpdate);
-            socket.off('complaint:updated', handleLiveUpdate);
-            socket.off('complaint:escalated', handleLiveUpdate);
-        };
-    }, [statusFilter, searchQuery, user]);
+    useEffect(() => { fetchComplaints(); }, [statusFilter, searchQuery]);
 
     // Filter by selected category pill
     const filteredComplaints = complaints.filter(c => {

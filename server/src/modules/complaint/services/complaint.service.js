@@ -2,7 +2,6 @@ const complaintRepository = require('../repositories/complaint.repository');
 const { AppError } = require('../../../middleware/error.handler');
 const eventBus = require('../../../events/event.bus');
 const EVENT_TYPES = require('../../../events/event.types');
-const { emitComplaintCreated, emitComplaintUpdated, emitComplaintEscalated } = require('../../../config/socket');
 const { sendComplaintCreatedWhatsApp, sendComplaintStatusWhatsApp, sendEscalationWhatsApp } = require('../../../services/whatsapp.service');
 
 class ComplaintService {
@@ -49,13 +48,10 @@ class ComplaintService {
         const complaint = await complaintRepository.createWithHistory(complaintData, historyData);
         const fullComplaint = await complaintRepository.findById(complaint.id);
 
-        // 4. Broadcast Real-Time Socket.io Event
-        emitComplaintCreated(fullComplaint || complaint);
-
-        // 5. Trigger WhatsApp Notification to Resident
+        // 4. Trigger WhatsApp Notification to Resident
         sendComplaintCreatedWhatsApp(complaint, user, block.name).catch(err => console.error('WhatsApp dispatch error:', err));
 
-        // 6. Emit internal pub/sub event
+        // 5. Emit internal pub/sub event
         if (block.supervisorId) {
             eventBus.publish(EVENT_TYPES.COMPLAINT_CREATED, {
                 complaint,
@@ -120,10 +116,7 @@ class ComplaintService {
         await complaintRepository.updateStatusWithHistory(complaintId, updateData, historyData);
         const updatedFull = await complaintRepository.findById(complaintId);
 
-        // 1. Broadcast Socket.io Event in Real-Time
-        emitComplaintUpdated(updatedFull || complaint);
-
-        // 2. Dispatch WhatsApp Notification to Resident
+        // 1. Dispatch WhatsApp Notification to Resident
         sendComplaintStatusWhatsApp(updatedFull || complaint, complaint.resident, newStatus, comment).catch(err => console.error('WhatsApp status error:', err));
 
         // 3. If Escalated, also dispatch Escalation WhatsApp alert
