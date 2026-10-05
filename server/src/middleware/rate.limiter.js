@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+const { rateLimit } = require('express-rate-limit');
 const { AppError } = require('./error.handler');
 
 const apiLimiter = rateLimit({
